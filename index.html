@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Phòng trọ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script defer src="app.js"></script>
+</head>
+<body>
+    <!-- Main Layout Container -->
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="toggle-btn" id="toggle-sidebar" aria-label="Thu gọn/Mở rộng Sidebar">
+                    <!-- Hamburger / Double Chevron Left Icon -->
+                    <svg class="icon-toggle" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" id="nav-home" title="Trang chủ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span class="nav-text">Trang chủ</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-status" title="Trạng thái">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                    </svg>
+                    <span class="nav-text">Trạng thái</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-advanced" title="Nâng cao">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span class="nav-text">Nâng cao</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Top Navigation Bar -->
+            <header class="top-bar">
+                <!-- Left spacing to align with layout when sidebar is floating/toggled -->
+                <div class="top-bar-left">
+                    <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Mở Menu">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Month & Year Selector -->
+                <div class="month-year-picker">
+                    <button class="picker-btn" id="prev-month" aria-label="Tháng trước">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <span class="current-month-display" id="month-year-display">Tháng 06 / 2026</span>
+                    <button class="picker-btn" id="next-month" aria-label="Tháng sau">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Filter Section (Top Right) -->
+                <div class="top-bar-right">
+                    <div class="filter-dropdown" id="status-filter-dropdown" style="display: none;">
+                        <button class="filter-btn" id="status-filter-btn" aria-label="Bộ lọc">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            <span id="filter-label">Bộ lọc</span>
+                        </button>
+                        <div class="dropdown-content" id="filter-dropdown-content">
+                            <a href="#" data-filter="thanhtien" class="active">Tổng quan</a>
+                            <a href="#" data-filter="phong">Tiền Phòng</a>
+                            <a href="#" data-filter="dien">Tiền Điện</a>
+                            <a href="#" data-filter="nuoc">Tiền Nước</a>
+                            <a href="#" data-filter="rac">Tiền Rác</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Grid Board -->
+            <section class="dashboard-grid" id="home-dashboard">
+                <!-- Room grids will be dynamically generated here by floor -->
+                <div id="floors-container"></div>
+            </section>
+
+            <!-- Status Board -->
+            <section class="dashboard-grid" id="status-dashboard" style="display: none;">
+                <div id="status-tables-container"></div>
+                <div id="status-summary-footer" class="status-summary-footer">
+                    <span class="status-summary-title" id="status-summary-title">Tổng tiền thực thu (3 tầng):</span>
+                    <span class="status-summary-value" id="status-total-value">0 đ</span>
+                </div>
+            </section>
+
+            <!-- Advanced Board -->
+            <section class="dashboard-grid" id="advanced-dashboard" style="display: none;">
+                <div class="advanced-grid">
+                    <!-- Invoice Card -->
+                    <div class="advanced-card" id="adv-invoice-card">
+                        <div class="adv-card-icon" style="color: var(--primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <line x1="10" y1="9" x2="8" y2="9"></line>
+                            </svg>
+                        </div>
+                        <div class="adv-card-info">
+                            <h4>Hóa đơn tổng hợp</h4>
+                            <p>Xem và in toàn bộ hóa đơn của tất cả các phòng trong một tháng cụ thể.</p>
+                        </div>
+                        <button class="btn btn-primary adv-card-btn" id="btn-adv-invoice" style="width: 100%; margin-top: 16px;">Xem ngay</button>
+                    </div>
+
+                    <!-- Room Card -->
+                    <div class="advanced-card" id="adv-room-card">
+                        <div class="adv-card-icon" style="color: var(--primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div class="adv-card-info">
+                            <h4>Áp dụng giá phòng</h4>
+                            <p>Thiết lập và áp dụng giá thuê phòng hàng loạt cho các phòng được chọn.</p>
+                        </div>
+                        <button class="btn btn-primary adv-card-btn" id="btn-adv-room" style="width: 100%; margin-top: 16px;">Thiết lập</button>
+                    </div>
+
+                    <!-- Electricity Card -->
+                    <div class="advanced-card" id="adv-electric-card">
+                        <div class="adv-card-icon" style="color: var(--primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
+                        <div class="adv-card-info">
+                            <h4>Đơn giá điện</h4>
+                            <p>Cập nhật đơn giá điện mới (VND/kWh) áp dụng cho tất cả các phòng.</p>
+                        </div>
+                        <button class="btn btn-primary adv-card-btn" id="btn-adv-electric" style="width: 100%; margin-top: 16px;">Cấu hình</button>
+                    </div>
+
+                    <!-- Water Card -->
+                    <div class="advanced-card" id="adv-water-card">
+                        <div class="adv-card-icon" style="color: var(--primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="adv-card-info">
+                            <h4>Đơn giá nước</h4>
+                            <p>Cập nhật đơn giá nước mới (VND/người) áp dụng cho tất cả các phòng.</p>
+                        </div>
+                        <button class="btn btn-primary adv-card-btn" id="btn-adv-water" style="width: 100%; margin-top: 16px;">Cấu hình</button>
+                    </div>
+
+                    <!-- Garbage Card -->
+                    <div class="advanced-card" id="adv-garbage-card">
+                        <div class="adv-card-icon" style="color: var(--primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                            </svg>
+                        </div>
+                        <div class="adv-card-info">
+                            <h4>Phí đổ rác</h4>
+                            <p>Cập nhật mức phí đổ rác mới (VND/tháng) áp dụng cho tất cả các phòng.</p>
+                        </div>
+                        <button class="btn btn-primary adv-card-btn" id="btn-adv-garbage" style="width: 100%; margin-top: 16px;">Cấu hình</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Edit/Detail Modal Dialog (Modal 1) -->
+    <div class="modal-overlay" id="room-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 class="modal-title">Cập nhật thông tin phòng <span id="modal-room-id">--</span></h2>
+                <button class="close-modal-btn" id="close-modal" aria-label="Đóng">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="room-form" autocomplete="off">
+                <div class="form-scroll-container">
+                    <div class="form-group">
+                        <label for="tenant-name" class="form-label">Tên khách thuê</label>
+                        <input type="text" id="tenant-name" class="form-input" placeholder="Nhập tên khách thuê (có thể để trống)">
+                    </div>
+                    <div class="form-group">
+                        <label for="tenant-phone" class="form-label">Số điện thoại</label>
+                        <input type="tel" id="tenant-phone" class="form-input" placeholder="Nhập số điện thoại (có thể để trống)">
+                    </div>
+                    <div class="form-group">
+                        <label for="rental-price" class="form-label">Giá phòng (VND/tháng)</label>
+                        <input type="text" id="rental-price" class="form-input" placeholder="Nhập giá phòng" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="electricity-meter" class="form-label">Chỉ số điện cũ (kWh)</label>
+                            <input type="text" id="electricity-meter" class="form-input" placeholder="Số điện" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="occupants-count" class="form-label">Số người ở</label>
+                            <select id="occupants-count" class="form-select">
+                                <option value="1">1 người</option>
+                                <option value="2">2 người</option>
+                                <option value="3">3 người</option>
+                                <option value="4">4 người</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ac-option" class="form-label">Máy lạnh tự lắp</label>
+                            <select id="ac-option" class="form-select">
+                                <option value="no">Không</option>
+                                <option value="yes">Có</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="deposit-amount" class="form-label">Tiền cọc (đ)</label>
+                            <input type="text" id="deposit-amount" class="form-input" placeholder="Nhập tiền cọc (có thể để trống)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="cancel-modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu thông tin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Room Summary Modal Dialog (Modal 2) -->
+    <div class="modal-overlay" id="room-summary-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" style="display: flex; align-items: center; gap: 10px;">
+                        Thông tin phòng <span id="summary-room-id">--</span>
+                        <a href="#" id="summary-view-details" class="view-details-link" target="_blank">xem chi tiết</a>
+                    </h2>
+                </div>
+                <button class="close-modal-btn" id="close-summary-modal" aria-label="Đóng">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="form-scroll-container">
+                <div class="summary-details-list">
+                    <div class="summary-item">
+                        <span class="summary-label">Khách thuê:</span>
+                        <span class="summary-value" id="summary-tenant-name">--</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Số điện thoại:</span>
+                        <span class="summary-value" id="summary-tenant-phone">--</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Giá phòng:</span>
+                        <span class="summary-value" id="summary-rental-price">--</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Chỉ số điện:</span>
+                        <span class="summary-value" id="summary-electricity">--</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Số người ở:</span>
+                        <span class="summary-value" id="summary-occupants">--</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Tiền cọc:</span>
+                        <span class="summary-value" id="summary-deposit">--</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Máy lạnh tự lắp:</span>
+                        <span class="summary-value" id="summary-ac">--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer" style="flex-direction: column; gap: 12px; align-items: stretch; background-color: var(--bg-app);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <button type="button" class="btn btn-outline" id="summary-edit-btn" style="justify-content: center;">Chỉnh sửa</button>
+                    <button type="button" class="btn btn-primary" id="summary-invoice-btn" style="justify-content: center;">Tạo hóa đơn</button>
+                </div>
+                <button type="button" class="btn btn-secondary" id="summary-delete-btn" style="width: 100%; border: 1px solid #fee2e2; border-radius: var(--border-radius-sm); justify-content: center;">
+                    Xóa người thuê (Trả phòng)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Modal Dialog (Modal 3) -->
+    <div class="modal-overlay" id="invoice-modal">
+        <div class="modal-card modal-large">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" style="display: flex; align-items: center; gap: 10px;">
+                        Lập hóa đơn phòng <span id="invoice-modal-room-id">--</span>
+                        <a href="#" id="invoice-view-details" class="view-details-link" target="_blank">xem chi tiết</a>
+                    </h2>
+                </div>
+                <button class="close-modal-btn" id="close-invoice-modal" aria-label="Đóng">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="invoice-form" autocomplete="off">
+                <div class="form-scroll-container">
+                    
+                    <!-- Payment Status Select -->
+                    <div class="form-group">
+                        <label for="invoice-payment-status" class="form-label">Trạng thái đóng tiền</label>
+                        <select id="invoice-payment-status" class="form-select">
+                            <option value="unpaid">Chưa đóng tiền</option>
+                            <option value="paid">Đã đóng tiền</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Selection -->
+                    <div class="form-group">
+                        <label for="invoice-date" class="form-label">Ngày lập hóa đơn</label>
+                        <input type="date" id="invoice-date" class="form-input" required>
+                    </div>
+
+                    <!-- Quick Electric Calculator -->
+                    <div class="form-row" style="background-color: var(--bg-app); padding: 12px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); margin-bottom: 16px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" style="margin-bottom: 4px;">Chỉ số điện cũ (kWh)</label>
+                            <div id="invoice-elect-old-display" style="font-weight: 700; font-size: 1.1rem; color: var(--text-main); margin-top: 8px;">0</div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="invoice-elect-new" class="form-label" style="margin-bottom: 4px;">Chỉ số điện mới (kWh)</label>
+                            <input type="text" id="invoice-elect-new" class="form-input" placeholder="Nhập số điện mới">
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Table -->
+                    <div class="invoice-table-container">
+                        <table class="invoice-table" id="invoice-table-el">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">STT</th>
+                                    <th style="width: 150px;">Khoản</th>
+                                    <th>Chi tiết</th>
+                                    <th style="width: 150px;">Thành Tiền (đ)</th>
+                                    <th style="width: 50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoice-table-body">
+                                <!-- Generated Dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <button type="button" class="invoice-add-row-btn" id="invoice-add-row">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Thêm khoản thu mới
+                    </button>
+                    
+                    <!-- Total Sum Outside the Frame -->
+                    <div class="invoice-summary-section">
+                        <span class="invoice-total-label">Tổng cộng:</span>
+                        <span class="invoice-total-value" id="invoice-total-display">0 đ</span>
+                    </div>
+                    
+                    <!-- Notes Area -->
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label for="invoice-notes" class="form-label">Ghi chú hóa đơn (nếu có)</label>
+                        <textarea id="invoice-notes" class="form-input" rows="2" placeholder="Ví dụ: Hạn đóng tiền trước ngày 15 hàng tháng"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="export-invoice-img">Xuất ảnh hóa đơn</button>
+                    <div class="footer-right-buttons">
+                        <button type="button" class="btn btn-outline" id="cancel-invoice-modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu hóa đơn</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Dialog -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-card" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+                <h2 class="modal-title" id="confirm-title">Xác nhận</h2>
+            </div>
+            <div class="form-scroll-container" style="padding: 20px 24px; color: var(--text-muted);">
+                <p id="confirm-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            </div>
+            <div class="modal-footer" style="justify-content: center; gap: 12px; background-color: var(--bg-app); border-top: none; padding: 16px 24px 24px;">
+                <button type="button" class="btn btn-outline" id="confirm-cancel-btn" style="min-width: 100px; justify-content: center;">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirm-ok-btn" style="min-width: 100px; justify-content: center; background-color: #dc2626;">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Hóa đơn tổng hợp (Nâng cao) -->
+    <div class="modal-overlay" id="adv-invoice-modal">
+        <div class="modal-card" style="max-width: 440px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Xem toàn bộ hóa đơn</h2>
+                <button class="close-modal-btn" id="close-adv-invoice-btn" aria-label="Đóng">&times;</button>
+            </div>
+            <div class="form-scroll-container" style="padding: 24px; text-align: center;">
+                <p style="margin-bottom: 20px; color: var(--text-muted);">Chọn kỳ thanh toán muốn xem hóa đơn tổng hợp:</p>
+                
+                <div class="month-year-picker" style="background-color: var(--primary); margin: 0 auto 24px; width: fit-content; display: flex; justify-content: center; border-radius: 30px; padding: 8px 16px;">
+                    <button class="picker-btn" id="adv-prev-month" type="button" style="color: white; border: none; background: none; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <span class="current-month-display" id="adv-month-display" style="color: white; font-weight: bold; min-width: 140px; text-align: center;">Tháng 06 / 2026</span>
+                    <button class="picker-btn" id="adv-next-month" type="button" style="color: white; border: none; background: none; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end; gap: 12px; background-color: var(--bg-app);">
+                <button class="btn btn-outline" id="cancel-adv-invoice-btn">Hủy</button>
+                <button class="btn btn-primary" id="adv-invoice-submit">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Áp dụng giá phòng (Nâng cao) -->
+    <div class="modal-overlay" id="adv-room-modal">
+        <div class="modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Áp dụng giá phòng</h2>
+                <button class="close-modal-btn" id="close-adv-room-btn" aria-label="Đóng">&times;</button>
+            </div>
+            <form id="adv-room-form">
+                <div class="form-scroll-container">
+                    <div class="form-group">
+                        <label for="adv-room-price" class="form-label">Giá phòng mới (đ/tháng)</label>
+                        <input type="text" id="adv-room-price" class="form-input" placeholder="Nhập giá phòng mới" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span>Chọn phòng áp dụng</span>
+                            <span style="font-size: 0.8rem; font-weight: normal; cursor: pointer; color: var(--primary);" id="adv-room-select-all">Chọn tất cả</span>
+                        </label>
+                        <div class="rooms-checkbox-grid" id="adv-rooms-list" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 200px; overflow-y: auto; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background-color: var(--bg-app);">
+                            <!-- Room checkboxes generated here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="justify-content: flex-end; gap: 12px; background-color: var(--bg-app);">
+                    <button type="button" class="btn btn-outline" id="cancel-adv-room-btn">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Đồng ý</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Điện (Nâng cao) -->
+    <div class="modal-overlay" id="adv-electric-modal">
+        <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Cấu hình đơn giá điện</h2>
+                <button class="close-modal-btn" id="close-adv-electric-btn" aria-label="Đóng">&times;</button>
+            </div>
+            <form id="adv-electric-form">
+                <div class="form-scroll-container">
+                    <div class="form-group">
+                        <label for="adv-electric-price" class="form-label">Đơn giá điện mới (đ/kWh)</label>
+                        <input type="text" id="adv-electric-price" class="form-input" placeholder="Mặc định: 4.000" required>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">Đơn giá này sẽ được áp dụng cho tất cả các phòng khi lập hóa đơn mới.</p>
+                </div>
+                <div class="modal-footer" style="justify-content: flex-end; gap: 12px; background-color: var(--bg-app);">
+                    <button type="button" class="btn btn-outline" id="cancel-adv-electric-btn">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Đồng ý</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nước (Nâng cao) -->
+    <div class="modal-overlay" id="adv-water-modal">
+        <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Cấu hình đơn giá nước</h2>
+                <button class="close-modal-btn" id="close-adv-water-btn" aria-label="Đóng">&times;</button>
+            </div>
+            <form id="adv-water-form">
+                <div class="form-scroll-container">
+                    <div class="form-group">
+                        <label for="adv-water-price" class="form-label">Đơn giá nước mới (đ/người)</label>
+                        <input type="text" id="adv-water-price" class="form-input" placeholder="Mặc định: 30.000" required>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">Đơn giá này sẽ được nhân với số người ở của từng phòng khi lập hóa đơn mới.</p>
+                </div>
+                <div class="modal-footer" style="justify-content: flex-end; gap: 12px; background-color: var(--bg-app);">
+                    <button type="button" class="btn btn-outline" id="cancel-adv-water-btn">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Đồng ý</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Rác (Nâng cao) -->
+    <div class="modal-overlay" id="adv-garbage-modal">
+        <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Cấu hình phí đổ rác</h2>
+                <button class="close-modal-btn" id="close-adv-garbage-btn" aria-label="Đóng">&times;</button>
+            </div>
+            <form id="adv-garbage-form">
+                <div class="form-scroll-container">
+                    <div class="form-group">
+                        <label for="adv-garbage-price" class="form-label">Đơn giá rác mới (đ/tháng)</label>
+                        <input type="text" id="adv-garbage-price" class="form-input" placeholder="Mặc định: 60.000" required>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">Mức phí này sẽ được áp dụng cho tất cả các phòng khi lập hóa đơn mới.</p>
+                </div>
+                <div class="modal-footer" style="justify-content: flex-end; gap: 12px; background-color: var(--bg-app);">
+                    <button type="button" class="btn btn-outline" id="cancel-adv-garbage-btn">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Đồng ý</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

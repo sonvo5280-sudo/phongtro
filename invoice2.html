@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóa đơn tổng hợp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .invoice2-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .invoice2-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .back-btn:hover {
+            color: var(--primary);
+        }
+        .invoice2-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .receipt-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        .receipt-card-print {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+            padding: 24px;
+            position: relative;
+        }
+        /* Receipt paper box styling */
+        .receipt-paper {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .receipt-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+        .receipt-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .receipt-info-block p {
+            margin-bottom: 4px;
+        }
+        .receipt-info-block p strong {
+            color: var(--text-main);
+        }
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+        .receipt-table th,
+        .receipt-table td {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+        }
+        .receipt-table th {
+            background-color: var(--bg-app);
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: left;
+        }
+        .receipt-table td.amount,
+        .receipt-table th.amount {
+            text-align: right;
+            width: 120px;
+        }
+        .receipt-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            padding: 12px 4px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .receipt-total-val {
+            color: var(--primary);
+        }
+        .receipt-notes {
+            background-color: var(--bg-app);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-style: italic;
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 24px;
+        }
+        .receipt-signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .sig-block {
+            text-align: center;
+            width: 150px;
+        }
+        .sig-block .sig-hint {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 4px;
+        }
+        .receipt-stamp {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            border: 2px solid;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            transform: rotate(10deg);
+        }
+        .receipt-stamp.paid {
+            color: #059669;
+            border-color: #059669;
+            background-color: rgba(209, 250, 229, 0.5);
+        }
+        .receipt-stamp.unpaid {
+            color: #dc2626;
+            border-color: #dc2626;
+            background-color: rgba(254, 242, 242, 0.5);
+        }
+        .empty-invoices {
+            text-align: center;
+            padding: 60px 40px;
+            color: var(--text-muted);
+            background-color: #ffffff;
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+        }
+        @media print {
+            body {
+                background-color: #ffffff;
+            }
+            .invoice2-header, .back-btn, .no-print {
+                display: none !important;
+            }
+            .invoice2-container {
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+            .receipt-card-print {
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                page-break-after: always;
+                break-after: page;
+            }
+            .receipt-card-print:last-child {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice2-container">
+        <header class="invoice2-header">
+            <a href="#" class="back-btn" onclick="window.close(); return false;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Quay lại
+            </a>
+            <h1 class="invoice2-title">Hóa đơn tổng hợp - Tháng <span id="title-date">--/----</span></h1>
+            <button class="btn btn-primary no-print" onclick="window.print()">In tất cả</button>
+        </header>
+        
+        <div class="receipt-wrapper" id="receipts-list">
+            <!-- Dynamically populated room receipts -->
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script>
+        // Floor layout definition
+        const FLOOR_CONFIG = [
+            {
+                name: 'Tầng trệt',
+                rooms: ['MT1', 'MT2', '00', '01', '02', '03', '04', '05']
+            },
+            {
+                name: 'Tầng 1',
+                rooms: ['101', '102', '103', '104', '105', '106', '107', '108', '109', '110', '111']
+            },
+            {
+                name: 'Tầng 2',
+                rooms: ['201', '202', '203', '204', '205', '206', '207', '208', '209', '210', '211']
+            }
+        ];
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const month = parseInt(urlParams.get('month'));
+        const year = parseInt(urlParams.get('year'));
+
+        function formatNumber(num) {
+            if (num === null || num === undefined || isNaN(num)) return '0';
+            return Math.round(Number(num)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Firebase Configuration & Initialization
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfFiyzR732p7bzk2bX0pcy037QawGcjHQ",
+            authDomain: "phongtro-39cec.firebaseapp.com",
+            databaseURL: "https://phongtro-39cec-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "phongtro-39cec",
+            storageBucket: "phongtro-39cec.appspot.com",
+            messagingSenderId: "721333586560",
+            appId: "1:721333586560:web:b0d82eb231d1dc7a74f46b"
+        };
+
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+            window.db = firebase.database();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!month || !year) {
+                document.getElementById('receipts-list').innerHTML = '<div class="empty-invoices"><p>Vui lòng chỉ định tháng và năm hợp lệ trên URL.</p></div>';
+                return;
+            }
+            
+            document.getElementById('title-date').textContent = `${month.toString().padStart(2, '0')} / ${year}`;
+            
+            if (window.db) {
+                db.ref().on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        if (data.rooms_active) {
+                            localStorage.setItem('phongtro_rooms_active', JSON.stringify(data.rooms_active));
+                        }
+                        if (data.price_electricity !== undefined) {
+                            localStorage.setItem('phongtro_price_electricity', data.price_electricity);
+                        }
+                        if (data.price_water !== undefined) {
+                            localStorage.setItem('phongtro_price_water', data.price_water);
+                        }
+                        if (data.price_garbage !== undefined) {
+                            localStorage.setItem('phongtro_price_garbage', data.price_garbage);
+                        }
+                        if (data.monthly_data) {
+                            for (const key in data.monthly_data) {
+                                localStorage.setItem(`phongtro_data_${key}`, JSON.stringify(data.monthly_data[key]));
+                            }
+                        }
+                        renderAllInvoices();
+                    }
+                });
+            } else {
+                renderAllInvoices();
+            }
+        });
+
+        function renderAllInvoices() {
+            const listEl = document.getElementById('receipts-list');
+            listEl.innerHTML = '';
+            
+            const key = `phongtro_data_${month}_${year}`;
+            const monthData = localStorage.getItem(key) ? JSON.parse(localStorage.getItem(key)) : {};
+            
+            let invoiceCount = 0;
+
+            FLOOR_CONFIG.forEach(floor => {
+                floor.rooms.forEach(roomId => {
+                    const roomData = monthData[roomId];
+                    if (roomData && roomData.invoice) {
+                        invoiceCount++;
+                        const invoice = roomData.invoice;
+                        
+                        const card = document.createElement('div');
+                        card.className = 'receipt-card-print';
+                        
+                        const floorName = floor.name;
+                        const status = invoice.paymentStatus || 'unpaid';
+                        const statusStamp = status === 'paid' ?
+                            `<div class="receipt-stamp paid">Đã Đóng Tiền</div>` :
+                            `<div class="receipt-stamp unpaid">Chưa Đóng Tiền</div>`;
+                        
+                        let tableRows = '';
+                        invoice.rows.forEach((row, i) => {
+                            tableRows += `
+                                <tr>
+                                    <td>${i + 1}</td>
+                                    <td><strong>${row.name}</strong></td>
+                                    <td>${row.detail || '-'}</td>
+                                    <td class="amount">${formatNumber(row.amount)} đ</td>
+                                </tr>
+                            `;
+                        });
+
+                        // Format invoice date
+                        let dateString = '';
+                        if (invoice.invoiceDate) {
+                            const parts = invoice.invoiceDate.split('-');
+                            if (parts.length === 3) {
+                                dateString = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                            }
+                        }
+
+                        card.innerHTML = `
+                            <div class="receipt-paper">
+                                ${statusStamp}
+                                <button class="btn btn-outline no-print" style="position: absolute; top: 15px; left: 20px; font-size: 0.8rem; padding: 6px 12px; height: auto;" onclick="downloadSingleInvoice('${roomId}')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    Tải ảnh
+                                </button>
+                                <div class="receipt-header">
+                                    <h2 class="receipt-title">HÓA ĐƠN THANH TOÁN</h2>
+                                    <span class="receipt-subtitle">Kỳ thanh toán: Tháng ${month.toString().padStart(2, '0')} / ${year}</span>
+                                </div>
+                                
+                                <div class="receipt-info">
+                                    <div class="receipt-info-block">
+                                        <p>Tầng: <strong>${floorName}</strong></p>
+                                        <p>Số phòng: <strong>${roomId}</strong></p>
+                                        <p>Khách thuê: <strong>${roomData.tenantName || '---'}</strong></p>
+                                    </div>
+                                    <div class="receipt-info-block" style="text-align: right;">
+                                        <p>Ngày lập: <strong>${dateString || '---'}</strong></p>
+                                        <p>Máy lạnh tự lắp: <strong>${roomData.ac === 'yes' ? 'Có' : 'Không'}</strong></p>
+                                        <p>Tiền cọc: <strong>${roomData.deposit ? formatNumber(roomData.deposit) + ' đ' : 'Không'}</strong></p>
+                                    </div>
+                                </div>
+                                
+                                <table class="receipt-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px;">STT</th>
+                                            <th>Khoản thu</th>
+                                            <th>Chi tiết</th>
+                                            <th class="amount">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tableRows}
+                                    </tbody>
+                                </table>
+                                
+                                <div class="receipt-total-row">
+                                    <span>Tổng cộng:</span>
+                                    <span class="receipt-total-val">${formatNumber(invoice.totalAmount)} đ</span>
+                                </div>
+                                
+                                ${invoice.notes ? `<div class="receipt-notes">Ghi chú: ${invoice.notes}</div>` : ''}
+                                
+                                <div class="receipt-signatures">
+                                    <div class="sig-block">
+                                        <p><strong>Khách thuê</strong></p>
+                                        <p class="sig-hint">(Ký và ghi rõ họ tên)</p>
+                                    </div>
+                                    <div class="sig-block">
+                                        <p><strong>Người lập biểu</strong></p>
+                                        <p class="sig-hint">(Ký và ghi rõ họ tên)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        listEl.appendChild(card);
+                    }
+                });
+            });
+            
+            if (invoiceCount === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-invoices">
+                        <p style="font-size: 1.1rem; font-weight: 500;">Không tìm thấy hóa đơn nào trong tháng này.</p>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 6px;">Vui lòng lập hóa đơn cho các phòng tại Trang chủ trước.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function downloadSingleInvoice(roomId) {
+            const key = `phongtro_data_${month}_${year}`;
+            const monthData = localStorage.getItem(key) ? JSON.parse(localStorage.getItem(key)) : {};
+            const roomData = monthData[roomId];
+            if (!roomData || !roomData.invoice) return;
+            
+            const invoice = roomData.invoice;
+            const tenantName = roomData.tenantName || '---';
+            
+            let floorName = '';
+            FLOOR_CONFIG.forEach(floor => {
+                if (floor.rooms.includes(roomId)) {
+                    floorName = floor.name;
+                }
+            });
+
+            const paymentStatus = invoice.paymentStatus || 'unpaid';
+            const notes = invoice.notes ? invoice.notes.trim() : '';
+            const totalAmount = invoice.totalAmount || 0;
+            const rows = invoice.rows || [];
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            const scale = 2;
+            const canvasWidth = 600;
+            const rowHeight = 35;
+            const canvasHeight = 520 + (rows.length * rowHeight) + (notes ? 60 : 0);
+            
+            canvas.width = canvasWidth * scale;
+            canvas.height = canvasHeight * scale;
+            ctx.scale(scale, scale);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            
+            const margin = 40;
+            const contentWidth = canvasWidth - (margin * 2);
+            
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(15, 15, canvasWidth - 30, canvasHeight - 30);
+            
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('HÓA ĐƠN THANH TOÁN', canvasWidth / 2, 60);
+            
+            ctx.fillStyle = '#64748b';
+            ctx.font = '500 14px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(`Kỳ thanh toán: Tháng ${month.toString().padStart(2, '0')} / ${year}`, canvasWidth / 2, 82);
+            
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(margin, 100);
+            ctx.lineTo(canvasWidth - margin, 100);
+            ctx.stroke();
+            
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Thông tin phòng:', margin, 125);
+            
+            ctx.font = 'normal 13px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = '#475569';
+            ctx.fillText(`Tầng: ${floorName}`, margin, 145);
+            ctx.fillText(`Số phòng: ${roomId}`, margin, 165);
+            ctx.fillText(`Khách thuê: ${tenantName}`, margin, 185);
+            
+            let dateString = '';
+            if (invoice.invoiceDate) {
+                const parts = invoice.invoiceDate.split('-');
+                if (parts.length === 3) {
+                    dateString = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+            }
+            
+            ctx.fillText(`Ngày lập: ${dateString || '---'}`, canvasWidth - margin - 180, 145);
+            ctx.fillText(`Máy lạnh tự lắp: ${roomData.ac === 'yes' ? 'Có' : 'Không'}`, canvasWidth - margin - 180, 165);
+            ctx.fillText(`Tiền cọc: ${roomData.deposit ? formatNumber(roomData.deposit) + ' đ' : 'Không'}`, canvasWidth - margin - 180, 185);
+            
+            ctx.save();
+            if (paymentStatus === 'paid') {
+                ctx.strokeStyle = '#166534';
+                ctx.fillStyle = '#f0fdf4';
+                ctx.lineWidth = 2;
+                roundRect(ctx, canvasWidth - margin - 150, 200, 145, 30, 6, true, true);
+                ctx.fillStyle = '#166534';
+                ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('ĐÃ ĐÓNG TIỀN', canvasWidth - margin - 77, 219);
+            } else {
+                ctx.strokeStyle = '#b91c1c';
+                ctx.fillStyle = '#fef2f2';
+                ctx.lineWidth = 2;
+                roundRect(ctx, canvasWidth - margin - 150, 200, 145, 30, 6, true, true);
+                ctx.fillStyle = '#b91c1c';
+                ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('CHƯA ĐÓNG TIỀN', canvasWidth - margin - 77, 219);
+            }
+            ctx.restore();
+            
+            let y = 255;
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(margin, y, contentWidth, 32);
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.strokeRect(margin, y, contentWidth, 32);
+            
+            ctx.fillStyle = '#475569';
+            ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('STT', margin + 12, y + 21);
+            ctx.fillText('Khoản thu', margin + 55, y + 21);
+            ctx.fillText('Chi tiết', margin + 205, y + 21);
+            ctx.textAlign = 'right';
+            ctx.fillText('Thành tiền (đ)', canvasWidth - margin - 12, y + 21);
+            
+            y += 32;
+            ctx.font = 'normal 13px "Plus Jakarta Sans", sans-serif';
+            
+            rows.forEach((row, i) => {
+                if (i % 2 === 1) {
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillRect(margin, y, contentWidth, rowHeight);
+                }
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.strokeRect(margin, y, contentWidth, rowHeight);
+                
+                ctx.fillStyle = '#64748b';
+                ctx.textAlign = 'left';
+                ctx.fillText((i + 1).toString(), margin + 12, y + 22);
+                
+                ctx.fillStyle = '#0f172a';
+                ctx.fillText(row.name, margin + 55, y + 22);
+                
+                ctx.fillStyle = '#64748b';
+                ctx.fillText(row.detail || '-', margin + 205, y + 22);
+                
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'right';
+                ctx.fillText(formatNumber(row.amount), canvasWidth - margin - 12, y + 22);
+                
+                y += rowHeight;
+            });
+            
+            y += 15;
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Tổng cộng:', margin, y + 10);
+            
+            ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = '#4f46e5';
+            ctx.textAlign = 'right';
+            ctx.fillText(`${formatNumber(totalAmount)} đ`, canvasWidth - margin, y + 12);
+            
+            y += 40;
+            
+            if (notes) {
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(margin, y, contentWidth, 45);
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.strokeRect(margin, y, contentWidth, 45);
+                
+                ctx.fillStyle = '#475569';
+                ctx.font = 'italic 12px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Ghi chú: ${notes}`, margin + 12, y + 26);
+                
+                y += 70;
+            }
+            
+            ctx.fillStyle = '#475569';
+            ctx.font = '600 12px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Khách thuê', margin + 80, y);
+            ctx.fillText('Người lập biểu', canvasWidth - margin - 80, y);
+            
+            ctx.font = 'italic 11px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('(Ký và ghi rõ họ tên)', margin + 80, y + 18);
+            ctx.fillText('(Ký và ghi rõ họ tên)', canvasWidth - margin - 80, y + 18);
+            
+            const link = document.createElement('a');
+            const stateStr = paymentStatus === 'paid' ? 'DaDong' : 'ChuaDong';
+            link.download = `HoaDon_${roomId}_Thang${month}_${year}_${stateStr}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            if (typeof radius === 'undefined') {
+                radius = 5;
+            }
+            if (typeof radius === 'number') {
+                radius = {tl: radius, tr: radius, br: radius, bl: radius};
+            } else {
+                var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+                for (var side in defaultRadius) {
+                    radius[side] = radius[side] || defaultRadius[side];
+                }
+            }
+            ctx.beginPath();
+            ctx.moveTo(x + radius.tl, y);
+            ctx.lineTo(x + width - radius.tr, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+            ctx.lineTo(x + width, y + height - radius.br);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+            ctx.lineTo(x + radius.bl, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+            ctx.lineTo(x, y + radius.tl);
+            ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+            ctx.closePath();
+            if (fill) {
+                ctx.fill();
+            }
+            if (stroke) {
+                ctx.stroke();
+            }
+        }
+    </script>
+</body>
+</html>

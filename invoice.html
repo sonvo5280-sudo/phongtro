@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử hóa đơn phòng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific Styles for Invoice History Page */
+        .history-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+        }
+
+        .back-btn:hover {
+            color: var(--primary);
+        }
+
+        .history-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* History list elements */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .history-card {
+            background-color: #ffffff;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .history-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-summary {
+            padding: 20px 24px;
+            display: grid;
+            grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr auto;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+        }
+
+        .summary-month {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .summary-tenant {
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .summary-total {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.05rem;
+        }
+
+        /* Status pill badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.paid {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.unpaid {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .toggle-status-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: var(--border-radius-sm);
+            font-family: var(--font-family);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: var(--transition-smooth);
+        }
+
+        .toggle-status-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        /* Expandable section */
+        .card-details {
+            border-top: 1px dashed var(--border-color);
+            background-color: var(--bg-app);
+            padding: 24px;
+            display: none;
+        }
+
+        .card-details.open {
+            display: block;
+        }
+
+        /* Printable Receipt Box */
+        .receipt-paper {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            max-width: 560px;
+            margin: 0 auto;
+            box-shadow: var(--shadow-md);
+            position: relative;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .receipt-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .receipt-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .receipt-info-block p {
+            margin-bottom: 4px;
+        }
+
+        .receipt-info-block p strong {
+            color: var(--text-main);
+        }
+
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+
+        .receipt-table th,
+        .receipt-table td {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .receipt-table th {
+            background-color: var(--bg-app);
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: left;
+        }
+
+        .receipt-table td.amount,
+        .receipt-table th.amount {
+            text-align: right;
+            width: 120px;
+        }
+
+        .receipt-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            padding: 12px 4px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .receipt-total-val {
+            color: var(--primary);
+        }
+
+        .receipt-notes {
+            background-color: var(--bg-app);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-style: italic;
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 24px;
+        }
+
+        .receipt-signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .sig-block {
+            text-align: center;
+            width: 150px;
+        }
+
+        .sig-block .sig-hint {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        .receipt-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        /* Stamp watermark overlay on receipt */
+        .receipt-stamp {
+            position: absolute;
+            top: 25px;
+            right: 40px;
+            border: 2px solid;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            transform: rotate(10deg);
+        }
+
+        .receipt-stamp.paid {
+            color: #059669;
+            border-color: #059669;
+            background-color: rgba(209, 250, 229, 0.5);
+        }
+
+        .receipt-stamp.unpaid {
+            color: #dc2626;
+            border-color: #dc2626;
+            background-color: rgba(254, 242, 242, 0.5);
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 60px 40px;
+            color: var(--text-muted);
+            background-color: #ffffff;
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .empty-history svg {
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
+        /* Print adjustments */
+        @media print {
+            body {
+                background-color: #ffffff;
+            }
+
+            .history-header,
+            .back-btn,
+            .receipt-actions,
+            .toggle-status-btn,
+            .card-summary,
+            .history-title {
+                display: none !important;
+            }
+
+            .history-container {
+                margin: 0;
+                padding: 0;
+            }
+
+            .history-card {
+                border: none;
+                box-shadow: none;
+            }
+
+            .card-details {
+                display: none;
+                background-color: #ffffff;
+                padding: 0;
+            }
+
+            .card-details.open {
+                display: block;
+            }
+
+            .receipt-paper {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                max-width: 100%;
+            }
+        }
+
+        /* Responsive adjustments for mobile screen */
+        @media (max-width: 768px) {
+            .history-container {
+                margin: 16px auto;
+                padding: 0 12px;
+            }
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            .history-title {
+                font-size: 1.25rem;
+            }
+            .card-summary {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                padding: 12px 14px;
+            }
+            .summary-month {
+                grid-column: 1 / 2;
+                font-size: 0.95rem;
+            }
+            .summary-tenant {
+                grid-column: 2 / 3;
+                text-align: right;
+                font-size: 0.85rem;
+                word-break: break-all;
+            }
+            .summary-total {
+                grid-column: 1 / 2;
+                font-size: 0.95rem;
+            }
+            .card-summary > div:nth-child(4) {
+                grid-column: 2 / 3;
+                display: flex;
+                justify-content: flex-end;
+            }
+            .card-summary > div:nth-child(5) {
+                grid-column: 1 / 3;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                gap: 12px;
+                width: 100%;
+                margin-top: 4px;
+                border-top: 1px dashed var(--border-color);
+                padding-top: 8px;
+            }
+            .card-details {
+                padding: 12px;
+            }
+            .receipt-paper {
+                padding: 16px;
+            }
+            .receipt-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .receipt-info-block {
+                text-align: left !important;
+            }
+            .receipt-table {
+                font-size: 0.8rem;
+            }
+            .receipt-table th, .receipt-table td {
+                padding: 6px 8px;
+            }
+            .receipt-table td.amount, .receipt-table th.amount {
+                width: auto;
+            }
+            .receipt-signatures {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                margin-top: 20px;
+            }
+            .sig-block {
+                width: 100%;
+            }
+            .receipt-stamp {
+                top: 10px;
+                right: 15px;
+                font-size: 0.7rem;
+                padding: 4px 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="history-container">
+
+        <!-- Back Navigation & Title -->
+        <header class="history-header">
+            <a href="index.html" class="back-btn" onclick="window.close(); return false;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Quay lại
+            </a>
+            <h1 class="history-title">Lịch sử Hóa đơn Phòng <span id="title-room-id">--</span></h1>
+        </header>
+
+        <!-- Timeline list of Invoices -->
+        <div class="history-list" id="history-list-el">
+            <!-- Dynamic Content -->
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script>
+        // Parse Room Query
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('room');
+
+        document.getElementById('title-room-id').textContent = roomId || '--';
+
+        // Format number with dots as thousand separator
+        function formatNumber(num) {
+            if (num === null || num === undefined || isNaN(num)) return '0';
+            return Math.round(Number(num)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Firebase Configuration & Initialization
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfFiyzR732p7bzk2bX0pcy037QawGcjHQ",
+            authDomain: "phongtro-39cec.firebaseapp.com",
+            databaseURL: "https://phongtro-39cec-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "phongtro-39cec",
+            storageBucket: "phongtro-39cec.appspot.com",
+            messagingSenderId: "721333586560",
+            appId: "1:721333586560:web:b0d82eb231d1dc7a74f46b"
+        };
+
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+            window.db = firebase.database();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!roomId) {
+                renderEmpty('Vui lòng chỉ định số phòng trên URL.');
+                return;
+            }
+            
+            if (window.db) {
+                db.ref().on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        if (data.rooms_active) {
+                            localStorage.setItem('phongtro_rooms_active', JSON.stringify(data.rooms_active));
+                        }
+                        if (data.price_electricity !== undefined) {
+                            localStorage.setItem('phongtro_price_electricity', data.price_electricity);
+                        }
+                        if (data.price_water !== undefined) {
+                            localStorage.setItem('phongtro_price_water', data.price_water);
+                        }
+                        if (data.price_garbage !== undefined) {
+                            localStorage.setItem('phongtro_price_garbage', data.price_garbage);
+                        }
+                        if (data.monthly_data) {
+                            for (const key in data.monthly_data) {
+                                localStorage.setItem(`phongtro_data_${key}`, JSON.stringify(data.monthly_data[key]));
+                            }
+                        }
+                        renderHistory();
+                    }
+                });
+            } else {
+                renderHistory();
+            }
+        });
+
+        // Search localStorage for all monthly data
+        function getRoomHistory() {
+            const history = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('phongtro_data_')) {
+                    const parts = key.split('_'); // ['phongtro', 'data', 'month', 'year']
+                    if (parts.length >= 4) {
+                        const month = parseInt(parts[2]);
+                        const year = parseInt(parts[3]);
+                        try {
+                            const data = JSON.parse(localStorage.getItem(key));
+                            // Only show if the room has a saved invoice
+                            if (data && data[roomId] && data[roomId].status === 'occupied' && data[roomId].invoice) {
+                                history.push({
+                                    month,
+                                    year,
+                                    storageKey: key,
+                                    roomData: data[roomId]
+                                });
+                            }
+                        } catch (e) {
+                            console.error('Error reading key ' + key, e);
+                        }
+                    }
+                }
+            }
+            // Sort by Year desc, Month desc (Newest first)
+            history.sort((a, b) => {
+                if (a.year !== b.year) return b.year - a.year;
+                return b.month - a.month;
+            });
+            return history;
+        }
+
+        function updatePaymentStatus(key, status) {
+            try {
+                const data = JSON.parse(localStorage.getItem(key));
+                if (data && data[roomId] && data[roomId].invoice) {
+                    data[roomId].invoice.paymentStatus = status;
+                    localStorage.setItem(key, JSON.stringify(data));
+                    if (window.db) {
+                        const parts = key.split('_');
+                        const firebaseKey = `${parts[2]}_${parts[3]}`;
+                        db.ref(`monthly_data/${firebaseKey}`).set(data);
+                    }
+                    limitInvoiceHistory(roomId);
+                    renderHistory();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function limitInvoiceHistory(roomId) {
+            const history = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('phongtro_data_')) {
+                    const parts = key.split('_');
+                    if (parts.length >= 4) {
+                        const month = parseInt(parts[2]);
+                        const year = parseInt(parts[3]);
+                        try {
+                            const data = JSON.parse(localStorage.getItem(key));
+                            if (data && data[roomId] && data[roomId].invoice) {
+                                history.push({
+                                    key: key,
+                                    year: year,
+                                    month: month
+                                });
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+                }
+            }
+            
+            history.sort((a, b) => {
+                if (a.year !== b.year) return b.year - a.year;
+                return b.month - a.month;
+            });
+            
+            if (history.length > 12) {
+                for (let i = 12; i < history.length; i++) {
+                    const keyToDelete = history[i].key;
+                    try {
+                        const data = JSON.parse(localStorage.getItem(keyToDelete));
+                        if (data && data[roomId]) {
+                            delete data[roomId].invoice;
+                            localStorage.setItem(keyToDelete, JSON.stringify(data));
+                            if (window.db) {
+                                const parts = keyToDelete.split('_');
+                                const firebaseKey = `${parts[2]}_${parts[3]}`;
+                                db.ref(`monthly_data/${firebaseKey}`).set(data);
+                            }
+                        }
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }
+        }
+
+        function renderHistory() {
+            const listEl = document.getElementById('history-list-el');
+            listEl.innerHTML = '';
+
+            const history = getRoomHistory();
+            if (history.length === 0) {
+                renderEmpty();
+                return;
+            }
+
+            history.forEach((item, index) => {
+                const roomData = item.roomData;
+                const invoice = roomData.invoice;
+
+                // If there's no invoice saved yet, let's create a placeholder summary
+                const hasInvoice = invoice && invoice.rows && invoice.rows.length > 0;
+                const totalAmount = hasInvoice ? invoice.totalAmount : (roomData.rentalPrice || 0);
+                const paymentStatus = hasInvoice ? (invoice.paymentStatus || 'unpaid') : 'unpaid';
+
+                const card = document.createElement('div');
+                card.className = 'history-card';
+                card.setAttribute('data-index', index);
+
+                // Format month text
+                const padMonth = item.month.toString().padStart(2, '0');
+                const periodText = `Tháng ${padMonth} / ${item.year}`;
+                const tenantName = roomData.tenantName || 'Không có tên';
+                const totalText = formatNumber(totalAmount) + ' đ';
+                const statusLabel = paymentStatus === 'paid' ? 'Đã đóng tiền' : 'Chưa đóng tiền';
+                const statusClass = paymentStatus === 'paid' ? 'paid' : 'unpaid';
+
+                const actionBtn = paymentStatus === 'paid' ? '' : `
+                            <button class="toggle-status-btn" onclick="event.stopPropagation(); togglePayment('${item.storageKey}', '${paymentStatus}')">
+                                Đổi trạng thái
+                            </button>
+                `;
+
+                card.innerHTML = `
+                    <div class="card-summary">
+                        <span class="summary-month">${periodText}</span>
+                        <span class="summary-tenant">${tenantName}</span>
+                        <span class="summary-total">${totalText}</span>
+                        <div>
+                            <span class="status-badge ${statusClass}">${statusLabel}</span>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            ${actionBtn}
+                            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(0deg); transition: transform 0.2s ease;">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="card-details" id="details-${index}">
+                        ${hasInvoice ? renderReceiptHTML(item, invoice, paymentStatus) : renderNoInvoiceNotice(item)}
+                    </div>
+                `;
+
+                // Toggle expand on summary click
+                const summary = card.querySelector('.card-summary');
+                const details = card.querySelector('.card-details');
+                const chevron = card.querySelector('.chevron');
+
+                summary.addEventListener('click', () => {
+                    const isOpen = details.classList.contains('open');
+                    // close all others first to make it clean
+                    document.querySelectorAll('.card-details').forEach(el => el.classList.remove('open'));
+                    document.querySelectorAll('.chevron').forEach(el => el.style.transform = 'rotate(0deg)');
+
+                    if (!isOpen) {
+                        details.classList.add('open');
+                        chevron.style.transform = 'rotate(180deg)';
+                    }
+                });
+
+                listEl.appendChild(card);
+            });
+        }
+
+        async function togglePayment(key, currentStatus) {
+            if (currentStatus === 'paid') return;
+            const ok = await showCustomConfirm(
+                'Xác nhận đóng tiền',
+                'Bạn có chắc chắn muốn chuyển trạng thái hóa đơn này thành "Đã đóng tiền"? Hành động này không thể hoàn tác.',
+                false
+            );
+            if (ok) {
+                updatePaymentStatus(key, 'paid');
+            }
+        }
+
+        function showCustomConfirm(title, message, isDangerous = false) {
+            return new Promise((resolve) => {
+                const confirmModal = document.getElementById('confirm-modal');
+                const confirmTitle = document.getElementById('confirm-title');
+                const confirmMessage = document.getElementById('confirm-message');
+                const confirmOkBtn = document.getElementById('confirm-ok-btn');
+                const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+
+                confirmTitle.textContent = title;
+                confirmMessage.textContent = message;
+
+                if (isDangerous) {
+                    confirmOkBtn.style.backgroundColor = '#dc2626';
+                    confirmOkBtn.style.color = '#ffffff';
+                } else {
+                    confirmOkBtn.style.backgroundColor = 'var(--primary)';
+                    confirmOkBtn.style.color = '#ffffff';
+                }
+
+                const onOk = () => {
+                    closeModal();
+                    resolve(true);
+                };
+
+                const onCancel = () => {
+                    closeModal();
+                    resolve(false);
+                };
+
+                const closeModal = () => {
+                    confirmModal.classList.remove('open');
+                    confirmOkBtn.removeEventListener('click', onOk);
+                    confirmCancelBtn.removeEventListener('click', onCancel);
+                };
+
+                confirmOkBtn.addEventListener('click', onOk);
+                confirmCancelBtn.addEventListener('click', onCancel);
+                confirmModal.classList.add('open');
+            });
+        }
+
+        async function deleteInvoice(key) {
+            const ok = await showCustomConfirm(
+                'Xóa hóa đơn',
+                `Bạn có chắc chắn muốn xóa hóa đơn phòng ${roomId} cho tháng này không?`,
+                true
+            );
+            if (ok) {
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    if (data && data[roomId]) {
+                        delete data[roomId].invoice;
+                        localStorage.setItem(key, JSON.stringify(data));
+                        if (window.db) {
+                            const parts = key.split('_');
+                            const firebaseKey = `${parts[2]}_${parts[3]}`;
+                            db.ref(`monthly_data/${firebaseKey}`).set(data);
+                        }
+                        renderHistory();
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        function renderNoInvoiceNotice(item) {
+            return `
+                <div style="text-align: center; padding: 20px; color: var(--text-muted);">
+                    <p>Phòng này chưa được lập hóa đơn chi tiết cho tháng này.</p>
+                    <p style="font-size: 0.85rem; margin-top: 6px;">Vui lòng truy cập giao diện chính để lập hóa đơn chi tiết.</p>
+                </div>
+            `;
+        }
+
+        function renderReceiptHTML(item, invoice, status) {
+            const padMonth = item.month.toString().padStart(2, '0');
+            const floorName = roomId.startsWith('MT') ? 'Tầng trệt' :
+                (roomId.startsWith('1') ? 'Tầng 1' : 'Tầng 2');
+
+            const today = new Date();
+            const dateString = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+
+            let tableRows = '';
+            invoice.rows.forEach((row, i) => {
+                tableRows += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td><strong>${row.name}</strong></td>
+                        <td>${row.detail || '-'}</td>
+                        <td class="amount">${formatNumber(row.amount)} đ</td>
+                    </tr>
+                `;
+            });
+
+            const statusStamp = status === 'paid' ?
+                `<div class="receipt-stamp paid">Đã Đóng Tiền</div>` :
+                `<div class="receipt-stamp unpaid">Chưa Đóng Tiền</div>`;
+
+            return `
+                <div class="receipt-paper">
+                    ${statusStamp}
+                    <div class="receipt-header">
+                        <h2 class="receipt-title">HÓA ĐƠN THANH TOÁN</h2>
+                        <span class="receipt-subtitle">Kỳ thanh toán: Tháng ${padMonth} / ${item.year}</span>
+                    </div>
+                    
+                    <div class="receipt-info">
+                        <div class="receipt-info-block">
+                            <p>Tầng: <strong>${floorName}</strong></p>
+                            <p>Số phòng: <strong>${roomId}</strong></p>
+                            <p>Khách thuê: <strong>${item.roomData.tenantName}</strong></p>
+                        </div>
+                        <div class="receipt-info-block" style="text-align: right;">
+                            <p>Ngày lập: <strong>${dateString}</strong></p>
+                            <p>Máy lạnh tự lắp: <strong>${item.roomData.ac === 'yes' ? 'Có' : 'Không'}</strong></p>
+                            <p>Tiền cọc: <strong>${item.roomData.deposit ? formatNumber(item.roomData.deposit) + ' đ' : 'Không'}</strong></p>
+                        </div>
+                    </div>
+                    
+                    <table class="receipt-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">STT</th>
+                                <th>Khoản thu</th>
+                                <th>Chi tiết</th>
+                                <th class="amount">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                    
+                    <div class="receipt-total-row">
+                        <span>Tổng cộng:</span>
+                        <span class="receipt-total-val">${formatNumber(invoice.totalAmount)} đ</span>
+                    </div>
+                    
+                    ${invoice.notes ? `<div class="receipt-notes">Ghi chú: ${invoice.notes}</div>` : ''}
+                    
+                    <div class="receipt-signatures">
+                        <div class="sig-block">
+                            <p><strong>Khách thuê</strong></p>
+                            <p class="sig-hint">(Ký và ghi rõ họ tên)</p>
+                        </div>
+                        <div class="sig-block">
+                            <p><strong>Người lập biểu</strong></p>
+                            <p class="sig-hint">(Ký và ghi rõ họ tên)</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="receipt-actions">
+                    <button class="btn btn-outline" onclick="printReceipt()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                            <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                        In hóa đơn
+                    </button>
+                    <button class="btn btn-primary" onclick="downloadReceiptPNG('${roomId}', '${padMonth}', '${item.year}', '${item.roomData.tenantName}', '${floorName}', ${JSON.stringify(invoice.rows).replace(/"/g, '&quot;')}, ${invoice.totalAmount}, '${status}', '${invoice.notes || ''}', '${item.roomData.ac || 'no'}', ${item.roomData.deposit || 0})">
+                        Tải ảnh PNG
+                    </button>
+                    <button class="btn btn-secondary" onclick="deleteInvoice('${item.storageKey}')" style="border: 1px solid #fee2e2; border-radius: var(--border-radius-sm); color: #dc2626;">
+                        Xóa hóa đơn
+                    </button>
+                </div>
+            `;
+        }
+
+        function printReceipt() {
+            window.print();
+        }
+
+        function downloadReceiptPNG(room, month, year, tenant, floor, rows, total, status, notes, ac, deposit) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const scale = 2;
+            const canvasWidth = 600;
+            const rowHeight = 35;
+            const canvasHeight = 520 + (rows.length * rowHeight) + (notes ? 60 : 0);
+
+            canvas.width = canvasWidth * scale;
+            canvas.height = canvasHeight * scale;
+            ctx.scale(scale, scale);
+
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            const margin = 40;
+            const contentWidth = canvasWidth - (margin * 2);
+
+            // Border
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(15, 15, canvasWidth - 30, canvasHeight - 30);
+
+            // Title
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('HÓA ĐƠN THANH TOÁN', canvasWidth / 2, 60);
+
+            // Date
+            ctx.fillStyle = '#64748b';
+            ctx.font = '500 14px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(`Kỳ thanh toán: Tháng ${month} / ${year}`, canvasWidth / 2, 82);
+
+            // Line
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.beginPath();
+            ctx.moveTo(margin, 100);
+            ctx.lineTo(canvasWidth - margin, 100);
+            ctx.stroke();
+
+            // Info
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Thông tin phòng:', margin, 125);
+
+            ctx.font = 'normal 13px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = '#475569';
+            ctx.fillText(`Tầng: ${floor}`, margin, 145);
+            ctx.fillText(`Số phòng: ${room}`, margin, 165);
+            ctx.fillText(`Khách thuê: ${tenant}`, margin, 185);
+
+            const today = new Date();
+            const dateString = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+            ctx.fillText(`Ngày lập: ${dateString}`, canvasWidth - margin - 180, 145);
+            ctx.fillText(`Máy lạnh tự lắp: ${ac === 'yes' ? 'Có' : 'Không'}`, canvasWidth - margin - 180, 165);
+            ctx.fillText(`Tiền cọc: ${deposit ? formatNumber(deposit) + ' đ' : 'Không'}`, canvasWidth - margin - 180, 185);
+
+            // Stamp
+            ctx.save();
+            if (status === 'paid') {
+                ctx.strokeStyle = '#166534';
+                ctx.fillStyle = '#f0fdf4';
+                ctx.lineWidth = 2;
+                roundRect(ctx, canvasWidth - margin - 150, 200, 145, 30, 6, true, true);
+                ctx.fillStyle = '#166534';
+                ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('ĐÃ ĐÓNG TIỀN', canvasWidth - margin - 77, 219);
+            } else {
+                ctx.strokeStyle = '#b91c1c';
+                ctx.fillStyle = '#fef2f2';
+                ctx.lineWidth = 2;
+                roundRect(ctx, canvasWidth - margin - 150, 200, 145, 30, 6, true, true);
+                ctx.fillStyle = '#b91c1c';
+                ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('CHƯA ĐÓNG TIỀN', canvasWidth - margin - 77, 219);
+            }
+            ctx.restore();
+
+            // Table Header
+            let y = 255;
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(margin, y, contentWidth, 32);
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.strokeRect(margin, y, contentWidth, 32);
+
+            ctx.fillStyle = '#475569';
+            ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('STT', margin + 12, y + 21);
+            ctx.fillText('Khoản thu', margin + 55, y + 21);
+            ctx.fillText('Chi tiết', margin + 205, y + 21);
+            ctx.textAlign = 'right';
+            ctx.fillText('Thành tiền (đ)', canvasWidth - margin - 12, y + 21);
+
+            // Table Rows
+            y += 32;
+            ctx.font = 'normal 13px "Plus Jakarta Sans", sans-serif';
+
+            rows.forEach((row, i) => {
+                if (i % 2 === 1) {
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillRect(margin, y, contentWidth, rowHeight);
+                }
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.strokeRect(margin, y, contentWidth, rowHeight);
+
+                ctx.fillStyle = '#64748b';
+                ctx.textAlign = 'left';
+                ctx.fillText((i + 1).toString(), margin + 12, y + 22);
+
+                ctx.fillStyle = '#0f172a';
+                ctx.fillText(row.name, margin + 55, y + 22);
+
+                ctx.fillStyle = '#64748b';
+                ctx.fillText(row.detail || '-', margin + 205, y + 22);
+
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'right';
+                ctx.fillText(formatNumber(row.amount), canvasWidth - margin - 12, y + 22);
+
+                y += rowHeight;
+            });
+
+            // Total Sum
+            y += 15;
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Tổng cộng:', margin, y + 10);
+
+            ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = '#4f46e5';
+            ctx.textAlign = 'right';
+            ctx.fillText(`${formatNumber(total)} đ`, canvasWidth - margin, y + 12);
+
+            y += 40;
+
+            // Notes
+            if (notes) {
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(margin, y, contentWidth, 45);
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.strokeRect(margin, y, contentWidth, 45);
+
+                ctx.fillStyle = '#475569';
+                ctx.font = 'italic 12px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Ghi chú: ${notes}`, margin + 12, y + 26);
+
+                y += 70;
+            }
+
+            // Signatures
+            ctx.fillStyle = '#475569';
+            ctx.font = '600 12px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Khách thuê', margin + 80, y);
+            ctx.fillText('Người lập biểu', canvasWidth - margin - 80, y);
+
+            ctx.font = 'italic 11px "Plus Jakarta Sans", sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('(Ký và ghi rõ họ tên)', margin + 80, y + 18);
+            ctx.fillText('(Ký và ghi rõ họ tên)', canvasWidth - margin - 80, y + 18);
+
+            // Download
+            const link = document.createElement('a');
+            const stateStr = status === 'paid' ? 'DaDong' : 'ChuaDong';
+            link.download = `HoaDon_${room}_Thang${month}_${year}_${stateStr}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            if (typeof radius === 'undefined') {
+                radius = 5;
+            }
+            if (typeof radius === 'number') {
+                radius = { tl: radius, tr: radius, br: radius, bl: radius };
+            }
+            ctx.beginPath();
+            ctx.moveTo(x + radius.tl, y);
+            ctx.lineTo(x + width - radius.tr, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+            ctx.lineTo(x + width, y + height - radius.br);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+            ctx.lineTo(x + radius.bl, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+            ctx.lineTo(x, y + radius.tl);
+            ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+            ctx.closePath();
+            if (fill) ctx.fill();
+            if (stroke) ctx.stroke();
+        }
+
+        function renderEmpty(msg = 'Không tìm thấy lịch sử hóa đơn cho phòng này.') {
+            const listEl = document.getElementById('history-list-el');
+            listEl.innerHTML = `
+                <div class="empty-history">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <p style="font-weight: 500;">${msg}</p>
+                </div>
+            `;
+        }
+    </script>
+    <!-- Custom Confirm Dialog -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-card" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+                <h2 class="modal-title" id="confirm-title">Xác nhận</h2>
+            </div>
+            <div class="form-scroll-container" style="padding: 20px 24px; color: var(--text-muted);">
+                <p id="confirm-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            </div>
+            <div class="modal-footer"
+                style="justify-content: center; gap: 12px; background-color: var(--bg-app); border-top: none; padding: 16px 24px 24px;">
+                <button type="button" class="btn btn-outline" id="confirm-cancel-btn"
+                    style="min-width: 100px; justify-content: center;">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirm-ok-btn"
+                    style="min-width: 100px; justify-content: center; background-color: #dc2626;">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
