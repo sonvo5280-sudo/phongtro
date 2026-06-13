@@ -43,30 +43,71 @@ if (typeof firebase !== 'undefined') {
     db.ref().on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
+            // Sync active rooms
             if (data.rooms_active) {
                 localStorage.setItem('phongtro_rooms_active', JSON.stringify(data.rooms_active));
+            } else {
+                localStorage.removeItem('phongtro_rooms_active');
             }
+            
+            // Sync prices
             if (data.price_electricity !== undefined) {
                 localStorage.setItem('phongtro_price_electricity', data.price_electricity);
+            } else {
+                localStorage.removeItem('phongtro_price_electricity');
             }
             if (data.price_water !== undefined) {
                 localStorage.setItem('phongtro_price_water', data.price_water);
+            } else {
+                localStorage.removeItem('phongtro_price_water');
             }
             if (data.price_garbage !== undefined) {
                 localStorage.setItem('phongtro_price_garbage', data.price_garbage);
+            } else {
+                localStorage.removeItem('phongtro_price_garbage');
             }
+            
+            // Sync monthly data
+            // Clean up local monthly data that is not on Firebase
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('phongtro_data_')) {
+                    const parts = key.split('_');
+                    if (parts.length >= 4) {
+                        const firebaseKey = `${parts[2]}_${parts[3]}`;
+                        if (!data.monthly_data || !data.monthly_data[firebaseKey]) {
+                            localStorage.removeItem(key);
+                        }
+                    }
+                }
+            }
+            
             if (data.monthly_data) {
                 for (const key in data.monthly_data) {
                     localStorage.setItem(`phongtro_data_${key}`, JSON.stringify(data.monthly_data[key]));
                 }
             }
-            // Trigger UI updates
-            const savedTab = localStorage.getItem('phongtro_active_tab') || 'home';
-            if (savedTab === 'home') {
-                renderDashboard();
-            } else if (savedTab === 'status') {
-                renderStatusDashboard();
+        } else {
+            // Firebase database is empty - wipe all cached application data locally
+            localStorage.removeItem('phongtro_rooms_active');
+            localStorage.removeItem('phongtro_price_electricity');
+            localStorage.removeItem('phongtro_price_water');
+            localStorage.removeItem('phongtro_price_garbage');
+            
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('phongtro_data_')) {
+                    localStorage.removeItem(key);
+                }
             }
+        }
+        
+        // Trigger UI updates
+        const savedTab = localStorage.getItem('phongtro_active_tab') || 'home';
+        if (savedTab === 'home') {
+            renderDashboard();
+        } else if (savedTab === 'status') {
+            renderStatusDashboard();
         }
     });
 }
